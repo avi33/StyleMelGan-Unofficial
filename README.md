@@ -1,7 +1,7 @@
 # StyleMelGan-Unofficial
 This is an unofficial pytorch implementation of stylemelgan - https://arxiv.org/pdf/2011.01557.pdf<br/>
-The repo is mainly https://github.com/descriptinc/melgan-neurips style<br/>
-PQMF was used from https://github.com/kan-bayashi/ParallelWaveGAN repo<br/>
+The repo is mainly https://github.com/descriptinc/melgan-neurips style <br/>
+PQMF and stft-losses was used from https://github.com/kan-bayashi/ParallelWaveGAN repo <br/>
 
 Several parameters are differ from the paper - segment length, window length in RWD
 
