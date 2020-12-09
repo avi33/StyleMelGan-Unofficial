@@ -23,7 +23,7 @@ def parse_args():
 
     parser.add_argument("--n_mel_channels", type=int, default=80)
     parser.add_argument("--downsamp_factor", type=int, default=4)   
-    parser.add_argument("--data_path", default="/home/avig/data/speech/cmu_arctic_2convert", type=Path)
+    parser.add_argument("--data_path", default=None, type=Path)
     #parser.add_argument("--data_path", default=None, type=Path)    
     parser.add_argument("--batch_size", type=int, default=32)
     parser.add_argument("--seq_len", type=int, default=8192)

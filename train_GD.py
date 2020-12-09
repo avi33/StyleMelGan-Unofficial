@@ -24,7 +24,7 @@ def parse_args():
     parser.add_argument("--n_mel_channels", type=int, default=80)
     parser.add_argument("--num_D", type=int, default=3)
     parser.add_argument("--downsamp_factor", type=int, default=4)   
-    parser.add_argument("--data_path", default="/home/avig/data/speech/cmu_arctic_2convert", type=Path)
+    parser.add_argument("--data_path", default=None, type=Path)
     #parser.add_argument("--data_path", default=None, type=Path)    
     parser.add_argument("--batch_size", type=int, default=32)
     parser.add_argument("--seq_len", type=int, default=8192)
@@ -33,7 +33,7 @@ def parse_args():
     parser.add_argument("--log_interval", type=int, default=100)
     parser.add_argument("--save_interval", type=int, default=1000)
     parser.add_argument("--n_test_samples", type=int, default=8)    
-    parser.add_argument("--Gpath", type=Path, default="/home/avig/data/speech/logs/youtube/inv-smg")    
+    parser.add_argument("--Gpath", type=Path, default=None)    
     args = parser.parse_args()
     return args
 
