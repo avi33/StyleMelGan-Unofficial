@@ -1,0 +1,6 @@
+logs/
+__pycache__/
+modueles/__pycache/
+venv/
+models/*.pt
+.vscode/
