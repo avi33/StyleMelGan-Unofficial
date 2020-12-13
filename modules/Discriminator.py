@@ -40,10 +40,7 @@ class Discriminator(nn.Module):
             DBlock(512, 512, 1),
         ]
         self.db_stack = nn.Sequential(*model)
-        self.final = nn.Sequential(
-            WNConv1d(512, 1, kernel_size=3, stride=1, padding=1),
-            nn.Tanh()
-         )
+        self.final = WNConv1d(512, 1, kernel_size=3, stride=1, padding=1)         
 
     def forward(self, x):
         fb = self.pqmf.analysis(x)

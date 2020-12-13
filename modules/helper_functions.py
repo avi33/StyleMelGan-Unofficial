@@ -14,23 +14,6 @@ def files_to_list(filename):
     return files
 
 
-def accuracy(output, target, topk=(1,)):
-    """Computes the precision@k for the specified values of k"""
-    with torch.no_grad():
-        maxk = max(topk)
-        batch_size = target.size(0)
-        _, pred = output.topk(maxk, 1, True, True)
-        pred = pred.t()
-        correct = pred.eq(target.view(1, -1).expand_as(pred))
-        return [correct[:k].view(-1).float().sum(0) * 100. / batch_size for k in topk]
-
-
-def to_onehot(idx, n_classes):
-    idx = idx % n_classes
-    onehot = torch.zeros(len(idx), n_classes).scatter_(1, idx.unsqueeze(1), 1.)
-    return onehot
-
-
 def save_sample(file_path, sampling_rate, audio):
     """Helper function to save sample
 
