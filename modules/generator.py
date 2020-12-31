@@ -9,7 +9,15 @@ class Generator(nn.Module):
     def __init__(self, input_size):
         super(Generator, self).__init__()
         noise_dim = 128        
-        self.noise_up = WNConvTranspose1d(noise_dim, noise_dim//2, kernel_size=32, stride=1, padding=0, output_padding=0)
+        model = []
+        model += [
+            WNConvTranspose1d(noise_dim, noise_dim//2, kernel_size=16, stride=8, padding=4, output_padding=0),
+            nn.LeakyReLU(0.2, True),
+            WNConvTranspose1d(noise_dim//2, noise_dim//2, kernel_size=8, stride=4, padding=2, output_padding=0),
+            nn.LeakyReLU(0.2, True),            
+        ]        
+        self.noise_up = nn.Sequential(*model)
+
         hidden_dim = noise_dim // 2        
         model = []
         for _ in range(8):
@@ -32,11 +40,11 @@ class Generator(nn.Module):
 
 if __name__ == "__main__":    
     from modules.stft import Audio2Mel
-    b = 2
+    b = 1
     n_frames = 10
     fft = Audio2Mel()
     m = fft(torch.randn(2, 1, 8192*n_frames))
-    n = torch.randn(b, 128, 32*(n_frames-1)+1)    
-    G = Generator(80, 128, 64)
+    n = torch.randn(b, 128, n_frames)    
+    G = Generator(80)
     y = G(m,n)
     print(y.shape)

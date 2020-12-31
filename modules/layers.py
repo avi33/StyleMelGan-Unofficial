@@ -16,6 +16,16 @@ def weights_init(m):
             torch.nn.init.constant_(m.bias, 0.0)
 
 
+class SafeSoftMax(nn.Module):
+    def __init__(self):
+        super(SafeSoftMax, self).__init__()
+
+    def forward(self, x):
+        x_max = torch.max(x, dim=1)[0]
+        x = torch.softmax(x-x_max, dim=1)
+        return x
+
+
 class GatedTanh(nn.Module):
     def __init__(self):
         super(GatedTanh, self).__init__()
@@ -60,3 +70,11 @@ class Tade(nn.Module):
         y = self.post_tade(y)
         return m2, y
     
+
+if __name__ == "__main__":
+    SSM = SafeSoftMax()
+    x = 1e-12*torch.rand(256, 1024)
+    x = x.sum(0).view(1, -1)
+    y1 = SSM(x)
+    y2 = F.softmax(x, dim=1)
+    print((y1-y2).sum())
