@@ -8,8 +8,8 @@ import time
 import argparse
 from pathlib import Path
 from dataset.dataset import AudioDataset
-from modules.Generator import Generator
-from modules.Discriminator import RWDiscriminator
+from modules.generator import Generator
+from modules.mr_discriminator import MRDiscriminator as Discriminator
 from modules.helper_functions import save_sample
 from modules.stft import Audio2Mel
 from modules.stft_losses import MultiResolutionSTFTLoss
@@ -56,12 +56,13 @@ def main():
     # Load PyTorch Models #
     #######################
     netG = Generator(args.n_mel_channels).cuda()
-    netG.load_state_dict(torch.load(args.Gpath / Path("best_netG.pt"), map_location=torch.device("cuda")))
-    print("G loaded")
+    if args.Gpath is not None:
+        netG.load_state_dict(torch.load(args.Gpath / Path("best_netG.pt"), map_location=torch.device("cuda")))
+        print("G loaded")
     netG.train()
-    netD = RWDiscriminator(num_D=args.num_D).cuda()
+    netD = Discriminator().cuda()
     netD.train()
-    fft = Audio2Mel(n_mel_channels=args.n_mel_channels, mel_fmin=80, mel_fmax=7800, sampling_rate=22050).cuda()
+    fft = Audio2Mel(n_mel_channels=args.n_mel_channels, mel_fmin=40, mel_fmax=None, sampling_rate=22050).cuda()
 
     print(netG)
     print(netD)
@@ -162,7 +163,7 @@ def main():
             
             sc_loss, mag_loss = mr_stft_loss(x_pred_t, x_t)            
             netG.zero_grad()
-            (4*loss_G + sc_loss + mag_loss).backward()
+            (loss_G + 10*sc_loss + 10*mag_loss).backward()
             optG.step()
 
             ######################
@@ -181,7 +182,7 @@ def main():
                 st = time.time()
                 with torch.no_grad():
                     for i, (voc, _) in enumerate(zip(test_voc, test_audio)):
-                        n = torch.randn(1, 128, 32*9+1).cuda()
+                        n = torch.randn(1, 128, 10).cuda()
                         pred_audio = netG(voc, n)
                         pred_audio = pred_audio.squeeze().cpu()
                         save_sample(root / ("generated_%d.wav" % i), 22050, pred_audio)
@@ -191,7 +192,6 @@ def main():
                             epoch,
                             sample_rate=22050,
                         )
-                        del n
                 torch.save(netG.state_dict(), root / "netG.pt")
                 torch.save(optG.state_dict(), root / "optG.pt")
                 torch.save(netD.state_dict(), root / "netD.pt")

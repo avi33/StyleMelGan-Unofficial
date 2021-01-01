@@ -63,7 +63,7 @@ def main():
     optG = torch.optim.Adam(netG.parameters(), lr=1e-4, betas=(0.5, 0.9))
 
     if load_root and load_root.exists():
-        netG.load_state_dict(torch.load(load_root / "best_netG.pt"))
+        netG.load_state_dict(torch.load(load_root / "netG.pt"))
         optG.load_state_dict(torch.load(load_root / "optG.pt"))        
         print('checkpoints loaded')
 

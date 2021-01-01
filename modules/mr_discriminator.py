@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from mel2wav.layers import weights_init, WNConv1d, WNConv2d
+from modules.layers import weights_init, WNConv1d, WNConv2d
 
 class STFT(nn.Module):
     def __init__(self, fft_size, hop_size, win_length):
