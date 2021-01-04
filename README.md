@@ -7,4 +7,5 @@ Several parameters are differ from the paper - segment length, window length in 
 
 To do:
 1. softmax gating is not working --> replaced with sigmoid gating<br/>
-2. Discrminitor training still not tested
+#2. Discrminitor training still not tested <br/> -
+2. Discriminitor from universal melgan produced better results - combination of time and frequency domain discriminators
