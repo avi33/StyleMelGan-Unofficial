@@ -1,6 +1,30 @@
 import torch
 import torch.nn as nn
+import torchaudio
 import numpy as np
+import random
+
+
+class RandomTimeShift(object):
+    def __init__(self, p, max_time_shift=None):
+        self.p = p
+        self.max_time_shift = max_time_shift
+    
+    def forward(self, sample):
+        if torch.rand(1) < self.p:
+            if self.max_time_shift is None:
+                self.max_time_shift = sample.shape[-1] // 20
+            n_shift = random.randint(0, self.max_time_shift)
+            if n_shift == 0:
+                return sample
+            else:
+                pad = torch.zeros(n_shift, dtype=sample.dtype)
+                direcion = random.random()
+                if direcion > 0.5:
+                    sample = torch.cat((pad, sample[:-n_shift]), dim=-1)
+                else:
+                    sample = torch.cat((sample[n_shift:], pad), dim=-1)
+        return sample
 
 
 class RandomAmp(object):
@@ -18,9 +42,8 @@ class RandomFlip(object):
         self.p = p
     def __call__(self, sample):
         if torch.rand(1) > self.p:
-            sample = torch.flip(sample, dims=[0])
-            #inv_idx = torch.arange(sample.size(0)-1, -1, -1).long()
-            #sample = sample[inv_idx]
+            inv_idx = torch.arange(sample.size(0)-1, -1, -1).long()
+            sample = sample[inv_idx]
         return sample
 
 
@@ -51,7 +74,7 @@ class RandomAddAWGN(object):
         if torch.rand(1) > self.p:     
             s = torch.sqrt(torch.mean(sample**2))
             sgm = s * 10**(-self.snr_db/20.)
-            w = torch.rand_like(sample) * sgm
+            w = torch.randn_like(sample) * sgm
             sample = sample + w
         return sample
 
@@ -75,23 +98,33 @@ class RandomAddSine(object):
 
 
 class AudioAugs(object):
-    def __init__(self, fs):        
+    def __init__(self, augs, fs):        
         self.random_amp = RandomAmp(low=0.3, high=1)
-        self.random_flip = RandomFlip(p=0.3)
+        self.random_flip = RandomFlip(p=0.5)
         self.random_neg = RandomAdd180Phase(p=0.5)
         self.random_quantnoise = RandomQuantNoise(n_bits=16, p=0.5)
         self.awgn = RandomAddAWGN(snr_db=30, p=0.5)
         self.sine = RandomAddSine(fs=fs, snr_db=30, p=0.5)
+        self.tshift = RandomTimeShift(p=0.5, max_time_shift=None)
+        self.augs = augs
     
     def __call__(self, sample):
-        sample = self.random_amp(sample)
-        sample = self.random_flip(sample)
-        #sample = self.random_neg(sample)
-        #sample = self.random_quantnoise(sample)        
-        #sample = self.sine(sample)
-        #sample = self.awgn(sample)
+        for aug in self.augs:
+            if aug=='amp':
+                sample = self.random_amp(sample)
+            elif aug=='flip':
+                sample = self.random_flip(sample)
+            elif aug=='neg':
+                sample = self.random_neg(sample)
+            elif aug=='quant':
+                sample = self.random_quantnoise(sample)
+            elif aug=='sine':
+                sample = self.sine(sample)
+            elif aug=='awgn':
+                sample = self.awgn(sample)
+            elif aug == 'tshift':
+                sample = self.tshift(sample)
         return sample
-
 
 if __name__ == "__main__":
     RA = RandomAmp(0.3, 1.)
@@ -99,11 +132,11 @@ if __name__ == "__main__":
     RN = RandomAdd180Phase(0.5)
     RQ = RandomQuantNoise(16, 0.5)
     RAW = RandomAddAWGN(30, 0.5)
-    RS = RandomAddSine(fs=22050, snr_db=30, p=0.5)
+    RS = RandomAddSine(30, 0.5)
     x = torch.randn(4)
     y1 = RF(x)
     y2 = RN(x)
     y3 = RQ(x)
-    y4 = RAW(x)
-    #y5 = RS(x)
-    print(x, x-y4)
+    y4 = RA(x)
+    y5 = RS(x)
+    print(x-y4)
